@@ -15,6 +15,6 @@ type Connector = {
     }[];
 };
 declare const connectorSettings: Connector[];
-declare function getConnector(id: ConnectorId, settings: Record<string, ConnectorSetting>): BaseConnector;
+declare function getConnector(id: ConnectorId, settings: Record<string, any>): BaseConnector;
 export { connectorSettings, getConnector };
 export type { Connector, ConnectorId, ConnectorSetting, BaseConnector };

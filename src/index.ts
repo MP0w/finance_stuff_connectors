@@ -72,7 +72,7 @@ const connectorSettings: Connector[] = [
 
 function getConnector(
   id: ConnectorId,
-  settings: Record<string, ConnectorSetting>
+  settings: Record<string, any>
 ): BaseConnector {
   switch (id) {
     case "binance":

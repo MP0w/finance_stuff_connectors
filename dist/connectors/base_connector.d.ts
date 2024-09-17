@@ -1,5 +1,4 @@
-import { ConnectorSetting } from "..";
 export interface BaseConnector {
-    settings: Record<string, ConnectorSetting>;
+    settings: Record<string, any>;
     getBalance(): Promise<number>;
 }
