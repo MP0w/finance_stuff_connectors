@@ -84,12 +84,6 @@ function getConnector(
   }
 }
 
-export {
-  connectorSettings,
-  AccountType,
-  Connector,
-  ConnectorId,
-  ConnectorSetting,
-  getConnector,
-  BaseConnector,
-};
+export { connectorSettings, getConnector };
+
+export type { Connector, ConnectorId, ConnectorSetting, BaseConnector };
