@@ -16,6 +16,12 @@ const connectorSettings = [
                 key: "api_key",
                 type: "string",
                 hint: "API key",
+                extraInstructions: "Generate a readonly API Key",
+            },
+            {
+                key: "api_secret",
+                type: "string",
+                hint: "API secret",
             },
         ],
     },

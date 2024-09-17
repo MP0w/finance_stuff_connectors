@@ -12,11 +12,12 @@
     "compile": "tsc"
   },
   "dependencies": {
+    "@binance/connector": "^3.4.1",
     "typescript": "^5.6.2"
   },
   "devDependencies": {
-    "tsc": "^2.0.4",
-    "@types/node": "^22.5.5"
+    "@types/node": "^22.5.5",
+    "tsc": "^2.0.4"
   },
   "peerDependencies": {
     "node": "^22.8.0"
