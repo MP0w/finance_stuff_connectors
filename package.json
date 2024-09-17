@@ -1,0 +1,22 @@
+{
+  "name": "finance_stuff_connectors",
+  "version": "1.0.0",
+  "packageManager": "yarn@4.5.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "build": "NODE_ENV=production tsc",
+    "prepare": "yarn build"
+  },
+  "dependencies": {
+    "typescript": "^5.6.2"
+  },
+  "devDependencies": {
+    "tsc": "^2.0.4",
+    "@types/node": "^22.8.0"
+  },
+  "peerDependencies": {
+    "node": "^22.8.0"
+  }
+}
