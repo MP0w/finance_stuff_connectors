@@ -41,10 +41,16 @@ const currency = "EUR";
 
 
 // ## BTC
-const connection = provider.getConnector("btc", {
+// const connection = provider.getConnector("btc", {
+//   currency,
+//   token: process.env.INDEXA_TOKEN!,
+//   addresses: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa,1BM1sAcrfV6d4zPKytzziu4McLQDsFC2Qc",
+// });
+
+// ## Custom
+const connection = provider.getConnector("hack", {
   currency,
-  token: process.env.INDEXA_TOKEN!,
-  addresses: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa,1BM1sAcrfV6d4zPKytzziu4McLQDsFC2Qc",
+  url: "https://gist.githubusercontent.com/MP0w/1f3fe84bbca6015c3c9960ab469a77b6/raw/52fbb64478a183944853388537e21822537d6a6f/gistfile1.txt",
 });
 
 connection.getBalance().then((balance) => {

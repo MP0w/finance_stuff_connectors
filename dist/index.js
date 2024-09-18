@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConnectorProvider = void 0;
 const binance_1 = require("./connectors/binance");
+const btc_1 = require("./connectors/btc");
 const debank_1 = require("./connectors/debank");
+const hack_1 = require("./connectors/hack");
 const indexa_1 = require("./connectors/indexa");
 const currencyExchange_1 = require("./currencyExchange");
 const getConnectorSettings = () => [
@@ -60,6 +62,33 @@ const getConnectorSettings = () => [
             },
         ],
     },
+    {
+        id: "btc",
+        name: "BTC",
+        type: "investment",
+        icon: "btc.png",
+        settings: [
+            {
+                key: "addresses",
+                type: "string",
+                hint: "Addresses",
+                extraInstructions: "A comma separated list of BTC addresses",
+            },
+        ],
+    },
+    {
+        id: "hack",
+        name: "Custom",
+        icon: "hack.png",
+        settings: [
+            {
+                key: "url",
+                type: "string",
+                hint: "URL",
+                extraInstructions: "We will call your url, needs to return a json with a value key containing the amount (optionally also a cost key)",
+            },
+        ],
+    },
 ];
 class ConnectorProvider {
     constructor(config) {
@@ -83,8 +112,10 @@ class ConnectorProvider {
                 return new debank_1.DebankConnector(this.config.debankAPIKey, settings, this.currencyExchange);
             case "indexa":
                 return new indexa_1.IndexaConnector(settings, this.currencyExchange);
-            default:
-                throw new Error("Connector not found");
+            case "btc":
+                return new btc_1.BTCConnector(settings, this.currencyExchange);
+            case "hack":
+                return new hack_1.HackConnector(settings);
         }
     }
 }

@@ -2,11 +2,11 @@ import { BaseConnector } from "./connectors/base_connector";
 import { CurrencyExchange } from "./currencyExchange";
 type AccountType = "fiat" | "investment";
 type ConnectorSetting = "string" | "number" | "boolean";
-type ConnectorId = "binance" | "indexa" | "debank";
+type ConnectorId = "binance" | "indexa" | "debank" | "btc" | "hack";
 type Connector = {
     id: ConnectorId;
     name: string;
-    type: AccountType;
+    type?: AccountType;
     icon: string | undefined;
     settings: {
         key: string;

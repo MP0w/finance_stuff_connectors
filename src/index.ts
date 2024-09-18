@@ -2,18 +2,19 @@ import { BaseConnector } from "./connectors/base_connector";
 import { BinanceConnector } from "./connectors/binance";
 import { BTCConnector } from "./connectors/btc";
 import { DebankConnector } from "./connectors/debank";
+import { HackConnector } from "./connectors/hack";
 import { IndexaConnector } from "./connectors/indexa";
 import { CurrencyExchange } from "./currencyExchange";
 
 type AccountType = "fiat" | "investment";
 
 type ConnectorSetting = "string" | "number" | "boolean";
-type ConnectorId = "binance" | "indexa" | "debank" | "btc";
+type ConnectorId = "binance" | "indexa" | "debank" | "btc" | "hack";
 
 type Connector = {
   id: ConnectorId;
   name: string;
-  type: AccountType;
+  type?: AccountType;
   icon: string | undefined;
   settings: {
     key: string;
@@ -96,6 +97,20 @@ const getConnectorSettings: () => Connector[] = () => [
       },
     ],
   },
+  {
+    id: "hack",
+    name: "Custom",
+    icon: "hack.png",
+    settings: [
+      {
+        key: "url",
+        type: "string",
+        hint: "URL",
+        extraInstructions:
+          "We will call your url, needs to return a json with a value key containing the amount (optionally also a cost key)",
+      },
+    ],
+  },
 ];
 
 export type ConnectorProviderConfig = {
@@ -137,8 +152,8 @@ export class ConnectorProvider {
         return new IndexaConnector(settings, this.currencyExchange);
       case "btc":
         return new BTCConnector(settings, this.currencyExchange);
-      default:
-        throw new Error("Connector not found");
+      case "hack":
+        return new HackConnector(settings);
     }
   }
 }
