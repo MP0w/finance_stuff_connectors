@@ -10,6 +10,7 @@
   ],
   "license": "MIT",
   "scripts": {
+    "prepare": "tsc",
     "prepack": "tsc",
     "compile": "tsc"
   },
