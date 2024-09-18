@@ -21,12 +21,12 @@ type Connector = {
   }[];
 };
 
-const connectorSettings: Connector[] = [
+const getConnectorSettings: () => Connector[] = () => [
   {
     id: "binance",
     name: "Binance",
     type: "investment",
-    icon: "https://public.bnbstatic.com/20190405/eb2349c3-b2f8-4a93-a286-8f86a62ea9d8.png",
+    icon: "binance.png",
     settings: [
       {
         key: "api_key",
@@ -45,7 +45,7 @@ const connectorSettings: Connector[] = [
     id: "debank",
     name: "ETH / EVM address (Debank)",
     type: "investment",
-    icon: "https://cdn.pixabay.com/photo/2021/05/24/09/15/ethereum-logo-6278329_1280.png",
+    icon: "eth.png",
     settings: [
       {
         key: "address",
@@ -60,7 +60,7 @@ const connectorSettings: Connector[] = [
     id: "indexa",
     name: "Indexa capital",
     type: "investment",
-    icon: "https://images.crunchbase.com/image/upload/c_pad,h_256,w_256,f_auto,q_auto:eco,dpr_1/v1450203189/y2gnamiis793yetubktt.png",
+    icon: "indexa.png",
     settings: [
       {
         key: "api_key",
@@ -75,6 +75,13 @@ const connectorSettings: Connector[] = [
     ],
   },
 ];
+
+const connectorSettings: Connector[] = getConnectorSettings().map((c) => {
+  return {
+    ...c,
+    icon: `https://mpow.dev/finance_stuff_connectors/icons/${c.icon}`,
+  };
+});
 
 function getConnector(
   id: ConnectorId,
