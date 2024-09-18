@@ -1,4 +1,5 @@
 import { BaseConnector } from "./connectors/base_connector";
+import { CurrencyExchange } from "./currencyExchange";
 type AccountType = "fiat" | "investment";
 type ConnectorSetting = "string" | "number" | "boolean";
 type ConnectorId = "binance" | "indexa" | "debank";
@@ -14,7 +15,15 @@ type Connector = {
         type: ConnectorSetting;
     }[];
 };
-declare const connectorSettings: Connector[];
-declare function getConnector(id: ConnectorId, settings: Record<string, any>): BaseConnector;
-export { connectorSettings, getConnector };
-export type { Connector, ConnectorId, ConnectorSetting, BaseConnector };
+export type ConnectorProviderConfig = {
+    debankAPIKey: string;
+    currencyAPIKey: string;
+};
+export declare class ConnectorProvider {
+    currencyExchange: CurrencyExchange;
+    config: ConnectorProviderConfig;
+    constructor(config: ConnectorProviderConfig);
+    connectorSettings: Connector[];
+    getConnector(id: ConnectorId, settings: Record<string, any>): BaseConnector;
+}
+export type { Connector, ConnectorId, ConnectorSetting };

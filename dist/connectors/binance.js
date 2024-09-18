@@ -7,8 +7,9 @@ exports.BinanceConnector = void 0;
 const { Spot } = require("@binance/connector");
 const https_1 = __importDefault(require("https"));
 class BinanceConnector {
-    constructor(settings) {
+    constructor(settings, currencyExchange) {
         this.settings = settings;
+        this.currencyExchange = currencyExchange;
         const httpsAgent = new https_1.default.Agent({
             rejectUnauthorized: false,
         });
@@ -35,14 +36,13 @@ class BinanceConnector {
     }
     async convertBTC(btcAmount) {
         const currency = this.settings.currency;
-        const ticker = currency === "USD" ? "BTCUSDT" : "BTCEUR";
         try {
-            const response = await this.client.tickerPrice(ticker);
+            const response = await this.client.tickerPrice("BTCUSDT");
             const btcPrice = parseFloat(response.data.price);
-            return btcAmount * btcPrice;
+            return this.currencyExchange.convert(btcAmount * btcPrice, "USD", currency);
         }
         catch (error) {
-            console.error(`Error fetching ${ticker} price:`, error);
+            console.error(`Error fetching BTC price:`, error);
             throw new Error("Failed to convert BTC");
         }
     }

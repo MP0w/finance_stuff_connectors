@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connectorSettings = void 0;
-exports.getConnector = getConnector;
+exports.ConnectorProvider = void 0;
 const binance_1 = require("./connectors/binance");
 const debank_1 = require("./connectors/debank");
 const indexa_1 = require("./connectors/indexa");
+const currencyExchange_1 = require("./currencyExchange");
 const getConnectorSettings = () => [
     {
         id: "binance",
@@ -58,20 +58,31 @@ const getConnectorSettings = () => [
         ],
     },
 ];
-const connectorSettings = getConnectorSettings().map((c) => {
-    return {
-        ...c,
-        icon: `https://mpow.dev/finance_stuff_connectors/icons/${c.icon}`,
-    };
-});
-exports.connectorSettings = connectorSettings;
-function getConnector(id, settings) {
-    switch (id) {
-        case "binance":
-            return new binance_1.BinanceConnector(settings);
-        case "debank":
-            return new debank_1.DebankConnector(settings);
-        case "indexa":
-            return new indexa_1.IndexaConnector(settings);
+class ConnectorProvider {
+    constructor(config) {
+        this.connectorSettings = getConnectorSettings().map((c) => {
+            return {
+                ...c,
+                icon: `https://mpow.dev/finance_stuff_connectors/icons/${c.icon}`,
+            };
+        });
+        this.config = config;
+        this.currencyExchange = new currencyExchange_1.CurrencyExchange(config.currencyAPIKey);
+    }
+    getConnector(id, settings) {
+        if (settings.currency !== "USD" && settings.currency !== "EUR") {
+            throw new Error("Currency must be USD or EUR");
+        }
+        switch (id) {
+            case "binance":
+                return new binance_1.BinanceConnector(settings, this.currencyExchange);
+            case "debank":
+                return new debank_1.DebankConnector(this.config.debankAPIKey, settings, this.currencyExchange);
+            case "indexa":
+                return new indexa_1.IndexaConnector(settings, this.currencyExchange);
+            default:
+                throw new Error("Connector not found");
+        }
     }
 }
+exports.ConnectorProvider = ConnectorProvider;

@@ -2,6 +2,7 @@ import { BaseConnector } from "./connectors/base_connector";
 import { BinanceConnector } from "./connectors/binance";
 import { DebankConnector } from "./connectors/debank";
 import { IndexaConnector } from "./connectors/indexa";
+import { CurrencyExchange } from "./currencyExchange";
 
 type AccountType = "fiat" | "investment";
 
@@ -76,27 +77,47 @@ const getConnectorSettings: () => Connector[] = () => [
   },
 ];
 
-const connectorSettings: Connector[] = getConnectorSettings().map((c) => {
-  return {
-    ...c,
-    icon: `https://mpow.dev/finance_stuff_connectors/icons/${c.icon}`,
-  };
-});
+export type ConnectorProviderConfig = {
+  debankAPIKey: string;
+  currencyAPIKey: string;
+};
 
-function getConnector(
-  id: ConnectorId,
-  settings: Record<string, any>
-): BaseConnector {
-  switch (id) {
-    case "binance":
-      return new BinanceConnector(settings);
-    case "debank":
-      return new DebankConnector(settings);
-    case "indexa":
-      return new IndexaConnector(settings);
+export class ConnectorProvider {
+  currencyExchange: CurrencyExchange;
+  config: ConnectorProviderConfig;
+
+  constructor(config: ConnectorProviderConfig) {
+    this.config = config;
+    this.currencyExchange = new CurrencyExchange(config.currencyAPIKey);
+  }
+
+  connectorSettings: Connector[] = getConnectorSettings().map((c) => {
+    return {
+      ...c,
+      icon: `https://mpow.dev/finance_stuff_connectors/icons/${c.icon}`,
+    };
+  });
+
+  getConnector(id: ConnectorId, settings: Record<string, any>): BaseConnector {
+    if (settings.currency !== "USD" && settings.currency !== "EUR") {
+      throw new Error("Currency must be USD or EUR");
+    }
+
+    switch (id) {
+      case "binance":
+        return new BinanceConnector(settings, this.currencyExchange);
+      case "debank":
+        return new DebankConnector(
+          this.config.debankAPIKey,
+          settings,
+          this.currencyExchange
+        );
+      case "indexa":
+        return new IndexaConnector(settings, this.currencyExchange);
+      default:
+        throw new Error("Connector not found");
+    }
   }
 }
 
-export { connectorSettings, getConnector };
-
-export type { Connector, ConnectorId, ConnectorSetting, BaseConnector };
+export type { Connector, ConnectorId, ConnectorSetting };

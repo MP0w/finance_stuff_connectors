@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.5.5",
+    "dotenv": "^16.4.5",
     "tsc": "^2.0.4"
   },
   "peerDependencies": {

@@ -1,13 +1,19 @@
+import { CurrencyExchange } from "../currencyExchange";
 import { BaseConnector } from "./base_connector";
 const { Spot } = require("@binance/connector");
 import https from "https";
 
 export class BinanceConnector implements BaseConnector {
   private client;
-  settings: Record<string, any>;
+  private settings: Record<string, any>;
+  private currencyExchange: CurrencyExchange;
 
-  constructor(settings: Record<string, any>) {
+  constructor(
+    settings: Record<string, any>,
+    currencyExchange: CurrencyExchange
+  ) {
     this.settings = settings;
+    this.currencyExchange = currencyExchange;
 
     const httpsAgent = new https.Agent({
       rejectUnauthorized: false,
@@ -40,13 +46,16 @@ export class BinanceConnector implements BaseConnector {
 
   async convertBTC(btcAmount: number): Promise<number> {
     const currency = this.settings.currency;
-    const ticker = currency === "USD" ? "BTCUSDT" : "BTCEUR";
     try {
-      const response = await this.client.tickerPrice(ticker);
+      const response = await this.client.tickerPrice("BTCUSDT");
       const btcPrice = parseFloat(response.data.price);
-      return btcAmount * btcPrice;
+      return this.currencyExchange.convert(
+        btcAmount * btcPrice,
+        "USD",
+        currency
+      );
     } catch (error) {
-      console.error(`Error fetching ${ticker} price:`, error);
+      console.error(`Error fetching BTC price:`, error);
       throw new Error("Failed to convert BTC");
     }
   }
