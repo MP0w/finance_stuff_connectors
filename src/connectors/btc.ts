@@ -51,8 +51,6 @@ export class BTCConnector implements BaseConnector {
     const balanceData: Record<string, { final_balance: number }> =
       await balanceResponse.json();
 
-    console.log(balanceData);
-
     let balanceSum = 0;
     Object.values(balanceData).forEach((addressData) => {
       balanceSum += addressData.final_balance;
