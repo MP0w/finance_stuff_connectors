@@ -18,33 +18,35 @@ const currency = "EUR";
 // });
 
 // ## Binance
-// const binance = provider.getConnector("binance", {
+// const connection = provider.getConnector("binance", {
 //   currency,
 //   api_key: process.env.BINANCE_API_KEY!,
 //   api_secret: process.env.BINANCE_API_SECRET!,
 // });
 
-// binance.getBalance().then((balance) => {
-//   console.log("balance", balance);
-// });
 
 // ## Debank
-// const debank = provider.getConnector("debank", {
+// const connection = provider.getConnector("debank", {
 //   currency,
 //   address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
 // });
 
-// debank.getBalance().then((balance) => {
-//   console.log("balance", balance);
-// });
 
 // ## Indexa
-// const indexa = provider.getConnector("indexa", {
+// const connection = provider.getConnector("indexa", {
 //   currency,
 //   token: process.env.INDEXA_TOKEN!,
 //   // account: "XXXXX",
 // });
 
-// indexa.getBalance().then((balance) => {
-//   console.log("balance", balance);
-// });
+
+// ## BTC
+const connection = provider.getConnector("btc", {
+  currency,
+  token: process.env.INDEXA_TOKEN!,
+  addresses: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa,1BM1sAcrfV6d4zPKytzziu4McLQDsFC2Qc",
+});
+
+connection.getBalance().then((balance) => {
+  console.log("balance", balance);
+});

@@ -1,5 +1,6 @@
 import { BaseConnector } from "./connectors/base_connector";
 import { BinanceConnector } from "./connectors/binance";
+import { BTCConnector } from "./connectors/btc";
 import { DebankConnector } from "./connectors/debank";
 import { IndexaConnector } from "./connectors/indexa";
 import { CurrencyExchange } from "./currencyExchange";
@@ -7,7 +8,7 @@ import { CurrencyExchange } from "./currencyExchange";
 type AccountType = "fiat" | "investment";
 
 type ConnectorSetting = "string" | "number" | "boolean";
-type ConnectorId = "binance" | "indexa" | "debank";
+type ConnectorId = "binance" | "indexa" | "debank" | "btc";
 
 type Connector = {
   id: ConnectorId;
@@ -81,6 +82,20 @@ const getConnectorSettings: () => Connector[] = () => [
       },
     ],
   },
+  {
+    id: "btc",
+    name: "BTC",
+    type: "investment",
+    icon: "btc.png",
+    settings: [
+      {
+        key: "addresses",
+        type: "string",
+        hint: "Addresses",
+        extraInstructions: "A comma separated list of BTC addresses",
+      },
+    ],
+  },
 ];
 
 export type ConnectorProviderConfig = {
@@ -120,6 +135,8 @@ export class ConnectorProvider {
         );
       case "indexa":
         return new IndexaConnector(settings, this.currencyExchange);
+      case "btc":
+        return new BTCConnector(settings, this.currencyExchange);
       default:
         throw new Error("Connector not found");
     }
