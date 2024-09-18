@@ -46,14 +46,17 @@ const getConnectorSettings = () => [
         icon: "indexa.png",
         settings: [
             {
-                key: "api_key",
+                key: "token",
                 type: "string",
-                hint: "API key",
+                hint: "API Token",
+                extraInstructions: "Indexa APIs are readonly, we can't do anything else than reading data. Generate a token following these instructions: https://support.indexacapital.com/es/esp/introduccion-api",
             },
             {
-                key: "api_secret",
+                key: "accounts",
                 type: "string",
-                hint: "API secret",
+                hint: "Accounts",
+                optional: true,
+                extraInstructions: "Leave it empty if you want to fetch the balance of all your accounts. Otherwise a comma separated list of accounts, you can find your account number in indexa (e.g. PE4TPPLP)",
             },
         ],
     },

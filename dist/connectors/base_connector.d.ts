@@ -1,3 +1,6 @@
 export interface BaseConnector {
-    getBalance(): Promise<number>;
+    getBalance(): Promise<{
+        value: number;
+        cost?: number;
+    }>;
 }

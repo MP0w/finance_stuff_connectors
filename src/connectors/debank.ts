@@ -17,7 +17,7 @@ export class DebankConnector implements BaseConnector {
     this.apiKey = apiKey;
   }
 
-  async getBalance(): Promise<number> {
+  async getBalance(): Promise<{ value: number; cost?: number }> {
     try {
       const apiUrl = "https://pro-openapi.debank.com/v1/user/total_balance";
 
@@ -26,11 +26,13 @@ export class DebankConnector implements BaseConnector {
         headers: { AccessKey: this.apiKey },
       });
 
-      return this.currencyExchange.convert(
-        response.data.total_usd_value,
-        "USD",
-        this.settings.currency
-      );
+      return {
+        value: await this.currencyExchange.convert(
+          response.data.total_usd_value,
+          "USD",
+          this.settings.currency
+        ),
+      };
     } catch (error) {
       console.error("Error fetching balance from Debank:", error);
       throw new Error("Failed to fetch balance from Debank");

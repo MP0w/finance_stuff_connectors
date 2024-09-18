@@ -13,6 +13,7 @@ type Connector = {
         hint: string;
         extraInstructions?: string;
         type: ConnectorSetting;
+        optional?: boolean;
     }[];
 };
 export type ConnectorProviderConfig = {

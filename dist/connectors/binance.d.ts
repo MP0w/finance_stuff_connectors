@@ -5,7 +5,10 @@ export declare class BinanceConnector implements BaseConnector {
     private settings;
     private currencyExchange;
     constructor(settings: Record<string, any>, currencyExchange: CurrencyExchange);
-    getBalance(): Promise<number>;
+    getBalance(): Promise<{
+        value: number;
+        cost?: number;
+    }>;
     getBTCBalance(type?: string): Promise<number>;
     convertBTC(btcAmount: number): Promise<number>;
 }

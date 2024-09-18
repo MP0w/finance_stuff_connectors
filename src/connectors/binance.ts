@@ -24,8 +24,8 @@ export class BinanceConnector implements BaseConnector {
     });
   }
 
-  async getBalance(): Promise<number> {
-    return await this.convertBTC(await this.getBTCBalance());
+  async getBalance(): Promise<{ value: number; cost?: number }> {
+    return { value: await this.convertBTC(await this.getBTCBalance()) };
   }
 
   async getBTCBalance(type: string = "SPOT"): Promise<number> {

@@ -5,5 +5,8 @@ export declare class DebankConnector implements BaseConnector {
     settings: Record<string, any>;
     currencyExchange: CurrencyExchange;
     constructor(apiKey: string, settings: Record<string, any>, currencyExchange: CurrencyExchange);
-    getBalance(): Promise<number>;
+    getBalance(): Promise<{
+        value: number;
+        cost?: number;
+    }>;
 }

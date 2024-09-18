@@ -9,7 +9,7 @@ const provider = new ConnectorProvider({
   debankAPIKey: process.env.DEBANK_API_KEY ?? "",
 });
 
-const currency = "USD";
+const currency = "EUR";
 
 // ## Currency Exchange
 
@@ -35,5 +35,16 @@ const currency = "USD";
 // });
 
 // debank.getBalance().then((balance) => {
+//   console.log("balance", balance);
+// });
+
+// ## Indexa
+// const indexa = provider.getConnector("indexa", {
+//   currency,
+//   token: process.env.INDEXA_TOKEN!,
+//   // account: "XXXXX",
+// });
+
+// indexa.getBalance().then((balance) => {
 //   console.log("balance", balance);
 // });

@@ -18,7 +18,7 @@ class BinanceConnector {
         });
     }
     async getBalance() {
-        return await this.convertBTC(await this.getBTCBalance());
+        return { value: await this.convertBTC(await this.getBTCBalance()) };
     }
     async getBTCBalance(type = "SPOT") {
         try {
