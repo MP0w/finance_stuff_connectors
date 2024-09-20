@@ -7,6 +7,14 @@ export class HackConnector implements BaseConnector {
     this.settings = settings;
   }
 
+  balanceTTLSeconds(): number {
+    return 60 * 5;
+  }
+
+  cacheKey(): string {
+    return this.settings.url;
+  }
+
   async getBalance(): Promise<{ value: number; cost?: number }> {
     if (!this.settings.url) {
       throw new Error("URL is required");

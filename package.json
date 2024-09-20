@@ -15,7 +15,8 @@
     "compile": "tsc"
   },
   "dependencies": {
-    "@binance/connector": "^3.4.1"
+    "@binance/connector": "^3.4.1",
+    "node-cache": "^5.1.2"
   },
   "devDependencies": {
     "@types/node": "^22.5.5",

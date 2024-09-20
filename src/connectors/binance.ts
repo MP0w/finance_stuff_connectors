@@ -24,6 +24,14 @@ export class BinanceConnector implements BaseConnector {
     });
   }
 
+  cacheKey(): string {
+    return this.settings.api_key + this.settings.api_secret;
+  }
+
+  balanceTTLSeconds(): number {
+    return 30 * 60;
+  }
+
   async getBalance(): Promise<{ value: number; cost?: number }> {
     return { value: await this.convertBTC(await this.getBTCBalance()) };
   }

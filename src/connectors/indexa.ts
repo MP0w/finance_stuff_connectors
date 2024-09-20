@@ -22,6 +22,14 @@ export class IndexaConnector implements BaseConnector {
     this.currencyExchange = currencyExchange;
   }
 
+  balanceTTLSeconds(): number {
+    return 240 * 60;
+  }
+
+  cacheKey(): string {
+    return this.settings.token + this.settings.accounts;
+  }
+
   async getBalance(): Promise<{ value: number; cost?: number }> {
     try {
       const accounts: string[] = ((this.settings.accounts as string) ?? "")

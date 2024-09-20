@@ -1,15 +1,18 @@
+import NodeCache from "node-cache";
 import { BaseConnector } from "./connectors/base_connector";
 import { BinanceConnector } from "./connectors/binance";
 import { BTCConnector } from "./connectors/btc";
 import { DebankConnector } from "./connectors/debank";
 import { HackConnector } from "./connectors/hack";
 import { IndexaConnector } from "./connectors/indexa";
+import { ZapperConnector } from "./connectors/zapper";
 import { CurrencyExchange } from "./currencyExchange";
+import { TTLConnectorWrapper } from "./TTLConnectorWrapper";
 
 type AccountType = "fiat" | "investment";
 
 type ConnectorSetting = "string" | "number" | "boolean";
-type ConnectorId = "binance" | "indexa" | "debank" | "btc" | "hack";
+type ConnectorId = "binance" | "indexa" | "debank" | "btc" | "hack" | "zapper";
 
 type Connector = {
   id: ConnectorId;
@@ -46,11 +49,32 @@ const getConnectorSettings: () => Connector[] = () => [
     ],
   },
   {
-    id: "debank",
-    name: "ETH / EVM address (Debank)",
+    id: "zapper",
+    name: "ETH / DeFi (EVM chains portfolios)",
     type: "investment",
     icon: "eth.png",
     settings: [
+      {
+        key: "address",
+        type: "string",
+        hint: "ETH / EVM address",
+        extraInstructions:
+          "Make sure to use a valid ETH / EVM address. This is the address that will be used to connect to Debank and get the balance acrosss all supported chains.",
+      },
+    ],
+  },
+  {
+    id: "debank",
+    name: "Debank (ETH / EVM)",
+    type: "investment",
+    icon: "debank.png",
+    settings: [
+      {
+        key: "api_key",
+        type: "string",
+        hint: "API key",
+        extraInstructions: "Get a Debank API Key",
+      },
       {
         key: "address",
         type: "string",
@@ -114,13 +138,14 @@ const getConnectorSettings: () => Connector[] = () => [
 ];
 
 export type ConnectorProviderConfig = {
-  debankAPIKey: string;
   currencyAPIKey: string;
+  zapperAPIKey: string;
 };
 
 export class ConnectorProvider {
   currencyExchange: CurrencyExchange;
   config: ConnectorProviderConfig;
+  cache = new NodeCache({ checkperiod: 10 * 60 });
 
   constructor(config: ConnectorProviderConfig) {
     this.config = config;
@@ -135,6 +160,17 @@ export class ConnectorProvider {
   });
 
   getConnector(id: ConnectorId, settings: Record<string, any>): BaseConnector {
+    return new TTLConnectorWrapper(
+      this.getUncachedConnector(id, settings),
+      id,
+      this.cache
+    );
+  }
+
+  private getUncachedConnector(
+    id: ConnectorId,
+    settings: Record<string, any>
+  ): BaseConnector {
     if (settings.currency !== "USD" && settings.currency !== "EUR") {
       throw new Error("Currency must be USD or EUR");
     }
@@ -143,17 +179,19 @@ export class ConnectorProvider {
       case "binance":
         return new BinanceConnector(settings, this.currencyExchange);
       case "debank":
-        return new DebankConnector(
-          this.config.debankAPIKey,
-          settings,
-          this.currencyExchange
-        );
+        return new DebankConnector(settings, this.currencyExchange);
       case "indexa":
         return new IndexaConnector(settings, this.currencyExchange);
       case "btc":
         return new BTCConnector(settings, this.currencyExchange);
       case "hack":
         return new HackConnector(settings);
+      case "zapper":
+        return new ZapperConnector(
+          this.config.zapperAPIKey,
+          settings,
+          this.currencyExchange
+        );
     }
   }
 }

@@ -8,13 +8,20 @@ export class DebankConnector implements BaseConnector {
   currencyExchange: CurrencyExchange;
 
   constructor(
-    apiKey: string,
     settings: Record<string, any>,
     currencyExchange: CurrencyExchange
   ) {
     this.settings = settings;
     this.currencyExchange = currencyExchange;
-    this.apiKey = apiKey;
+    this.apiKey = settings.api_key;
+  }
+
+  balanceTTLSeconds(): number {
+    return 60 * 60 * 6;
+  }
+
+  cacheKey(): string {
+    return this.settings.api_key + this.settings.address;
   }
 
   async getBalance(): Promise<{ value: number; cost?: number }> {

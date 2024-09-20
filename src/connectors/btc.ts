@@ -16,6 +16,14 @@ export class BTCConnector implements BaseConnector {
     this.currencyExchange = currencyExchange;
   }
 
+  balanceTTLSeconds(): number {
+    return 30 * 60;
+  }
+
+  cacheKey(): string {
+    return this.settings.addresses;
+  }
+
   async getBTCPrice(): Promise<number> {
     if (
       cachedBTCPrice &&
