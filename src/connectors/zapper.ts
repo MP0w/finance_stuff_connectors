@@ -42,11 +42,12 @@ export class ZapperConnector implements BaseConnector {
       headers: this.headers,
     });
 
-    const addressData = response.data[this.settings.address];
+    const addressesesData = response.data;
+    const allTokensData = Object.values(addressesesData).flat();
 
     const defaultResult = { balance: 0, updatedAt: new Date() };
     const result =
-      addressData?.reduce((acc, address) => {
+      allTokensData?.reduce((acc, address) => {
         acc.balance += address.token.balanceUSD;
         acc.updatedAt =
           acc.updatedAt.getTime() < new Date(address.updatedAt).getTime()
@@ -65,7 +66,7 @@ export class ZapperConnector implements BaseConnector {
       ),
       shouldRefresh: elapsed > this.balanceTTLSeconds(),
       elapsed,
-      isEmpty: addressData?.length ?? 0 === 0,
+      isEmpty: (allTokensData?.length ?? 0) === 0,
     };
   }
 
@@ -155,3 +156,12 @@ export class ZapperConnector implements BaseConnector {
     }
   }
 }
+
+// ## To getZapper points
+// cURL -X 'GET' \
+//   'https://api.zapper.xyz/v1/api-clients/points' \
+//   -H 'accept: */*' \
+//   -H 'Authorization: Basic xx'
+// console.log(
+//   Buffer.from(process.env.ZAPPER_API_KEY! + ":").toString("base64")
+// );
