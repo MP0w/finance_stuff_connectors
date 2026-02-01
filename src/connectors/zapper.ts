@@ -1,12 +1,29 @@
 import axios from "axios";
 import { CurrencyExchange } from "../currencyExchange";
 import { Balance, BaseConnector } from "./base_connector";
-import { Buffer } from "buffer"; // Added import for Buffer
+import { Buffer } from "buffer";
+
+interface PortfolioV2Response {
+  data: {
+    portfolioV2: {
+      tokenBalances: {
+        totalBalanceUSD: number;
+      };
+      appBalances: {
+        totalBalanceUSD: number;
+      };
+      nftBalances?: {
+        totalBalanceUSD: number;
+      };
+    };
+  };
+}
 
 export class ZapperConnector implements BaseConnector {
   settings: Record<string, any>;
   currencyExchange: CurrencyExchange;
   private headers: Record<string, string>;
+  private graphqlEndpoint = "https://public.zapper.xyz/graphql";
 
   constructor(
     apiKey: string,
@@ -17,138 +34,94 @@ export class ZapperConnector implements BaseConnector {
     this.currencyExchange = currencyExchange;
     this.headers = {
       Authorization: `Basic ${Buffer.from(apiKey + ":").toString("base64")}`,
+      "Content-Type": "application/json",
     };
   }
 
   balanceTTLSeconds(): number {
-    return 60 * 60 * 4;
+    return 60 * 60 * 2;
   }
 
   cacheKey(): string {
     return this.settings.address;
   }
 
-  private tokensEndpoint = () =>
-    "https://api.zapper.xyz/v2/balances/tokens?addresses[]=" +
-    this.settings.address;
-  private appsEndpoint = () =>
-    "https://api.zapper.xyz/v2/balances/apps?addresses[]=" +
-    this.settings.address;
-
-  async getTokensBalance() {
-    const response = await axios.get<{
-      [key: string]: { token: { balanceUSD: number }; updatedAt: string }[];
-    }>(this.tokensEndpoint(), {
-      headers: this.headers,
-    });
-
-    const addressesesData = response.data;
-    const allTokensData = Object.values(addressesesData).flat();
-
-    const defaultResult = { balance: 0, updatedAt: new Date() };
-    const result =
-      allTokensData?.reduce((acc, address) => {
-        acc.balance += address.token.balanceUSD;
-        acc.updatedAt =
-          acc.updatedAt.getTime() < new Date(address.updatedAt).getTime()
-            ? acc.updatedAt
-            : new Date(address.updatedAt);
-        return acc;
-      }, defaultResult) ?? defaultResult;
-
-    const elapsed = (Date.now() - result.updatedAt.getTime()) / 1000;
-
-    return {
-      value: await this.currencyExchange.convert(
-        result.balance,
-        "USD",
-        this.settings.currency
-      ),
-      shouldRefresh: elapsed > this.balanceTTLSeconds(),
-      elapsed,
-      isEmpty: (allTokensData?.length ?? 0) === 0,
-    };
+  private getPortfolioQuery() {
+    return `
+      query PortfolioV2($addresses: [Address!]!) {
+        portfolioV2(addresses: $addresses) {
+          tokenBalances {
+            totalBalanceUSD
+          }
+          appBalances {
+            totalBalanceUSD
+          }
+          nftBalances {
+            totalBalanceUSD
+          }
+        }
+      }
+    `;
   }
 
-  async getAppsBalance() {
-    const response = await axios.get<
-      { updatedAt: string; balanceUSD: number }[]
-    >(this.appsEndpoint(), {
-      headers: this.headers,
-    });
+  async getPortfolioBalance() {
+    try {
+      const response = await axios.post<PortfolioV2Response>(
+        this.graphqlEndpoint,
+        {
+          query: this.getPortfolioQuery(),
+          variables: {
+            addresses: [this.settings.address],
+          },
+        },
+        {
+          headers: this.headers,
+        }
+      );
 
-    const result = response.data.reduce(
-      (acc, address) => {
-        acc.balance += address.balanceUSD;
-        acc.updatedAt =
-          acc.updatedAt.getTime() < new Date(address.updatedAt).getTime()
-            ? acc.updatedAt
-            : new Date(address.updatedAt);
-        return acc;
-      },
-      { balance: 0, updatedAt: new Date() }
-    );
+      if (!response.data.data?.portfolioV2) {
+        throw new Error("Invalid response from Zapper API");
+      }
 
-    const elapsed = (Date.now() - result.updatedAt.getTime()) / 1000;
+      const portfolio = response.data.data.portfolioV2;
+      
+      // Calculate total balance (tokens + apps + NFTs)
+      const totalBalanceUSD = 
+        (portfolio.tokenBalances?.totalBalanceUSD || 0) +
+        (portfolio.appBalances?.totalBalanceUSD || 0) +
+        (portfolio.nftBalances?.totalBalanceUSD || 0);
 
-    return {
-      value: await this.currencyExchange.convert(
-        result.balance,
-        "USD",
-        this.settings.currency
-      ),
-      shouldRefresh: elapsed > this.balanceTTLSeconds(),
-      elapsed,
-      isEmpty: response.data.length === 0,
-    };
+      return {
+        balance: totalBalanceUSD,
+      };
+    } catch (error: any) {
+      console.error("Error fetching portfolio from Zapper:", error);
+      
+      // Log more detailed error information
+      if (error.response) {
+        console.error("Response status:", error.response.status);
+        console.error("Response data:", JSON.stringify(error.response.data));
+      }
+      
+      throw new Error(`Failed to fetch portfolio from Zapper: ${error.message}`);
+    }
   }
-
-  async refreshJob(url: string) {
-    const response = await axios.post(url, null, {
-      headers: this.headers,
-    });
-
-    console.log("Zapper Refresh job", JSON.stringify(response.data));
-  }
-
-  //   async getJobStatus(id: string) {
-  //     const response = await axios.get(
-  //       "https://api.zapper.xyz/v2/balances/job-status?jobId=" + id,
-  //       {
-  //         headers: this.headers,
-  //       }
-  //     );
-  //     console.log("Zapper Refresh job status", JSON.stringify(response.data));
-  //   }
 
   async getBalance(): Promise<Balance> {
     try {
-      const tokensBalance = await this.getTokensBalance();
-      const appsBalance = await this.getAppsBalance();
+      const portfolioBalance = await this.getPortfolioBalance();
 
-      const shouldRefresh =
-        tokensBalance.shouldRefresh || appsBalance.shouldRefresh;
-
-      if (tokensBalance.shouldRefresh || tokensBalance.isEmpty) {
-        await this.refreshJob(this.tokensEndpoint());
-      }
-
-      if (appsBalance.shouldRefresh || appsBalance.isEmpty) {
-        await this.refreshJob(this.appsEndpoint());
-      }
-
-      const maxElapsed = Math.max(tokensBalance.elapsed, appsBalance.elapsed);
-      console.log("Max elapsed", maxElapsed);
-      var ttl = shouldRefresh ? 20 : this.balanceTTLSeconds() - maxElapsed;
-      if (shouldRefresh) {
-        // not if empty to prevent loops
-        ttl = 20;
-      }
+      // Convert USD balance to target currency
+      const value = await this.currencyExchange.convert(
+        portfolioBalance.balance,
+        "USD",
+        this.settings.currency
+      );
 
       return {
-        value: tokensBalance.value + appsBalance.value,
-        outdated: tokensBalance.shouldRefresh || appsBalance.shouldRefresh,
-        ttl,
+        value,
+        outdated: false,
+        ttl: this.balanceTTLSeconds(),
       };
     } catch (error) {
       console.error("Error fetching balance from Zapper:", error);
@@ -156,12 +129,3 @@ export class ZapperConnector implements BaseConnector {
     }
   }
 }
-
-// ## To getZapper points
-// cURL -X 'GET' \
-//   'https://api.zapper.xyz/v1/api-clients/points' \
-//   -H 'accept: */*' \
-//   -H 'Authorization: Basic xx'
-// console.log(
-//   Buffer.from(process.env.ZAPPER_API_KEY! + ":").toString("base64")
-// );
