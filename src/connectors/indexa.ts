@@ -48,8 +48,14 @@ export class IndexaConnector implements BaseConnector {
         });
 
         const activeAccounts = accountResponse.data.accounts
-          .filter((account) => account.status === "active")
-          .map((account) => account.account_number);
+          .filter(
+            (account: { account_number: string; status: string }) =>
+              account.status === "active"
+          )
+          .map(
+            (account: { account_number: string; status: string }) =>
+              account.account_number
+          );
         accounts.push(...activeAccounts);
       }
 
